@@ -1,0 +1,22 @@
+{
+  "name": "phaser-game-collin",
+  "version": "1.0.0",
+  "description": "collins game ",
+  "keywords": [],
+  "license": "ISC",
+  "author": "collin",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port $PORT",
+    "start": "vite preview --host 0.0.0.0 --port $PORT"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "vite": "^7.3.0"
+  }
+}
