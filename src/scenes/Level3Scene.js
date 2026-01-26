@@ -3031,36 +3031,62 @@ export class Level3Scene extends Phaser.Scene {
     }
 
     showVictoryScreen() {
+        // Store Level 3 points
+        localStorage.setItem('level3Points', this.points.toString());
+        
+        // Get points from all levels
+        const level1Points = parseInt(localStorage.getItem('level1Points') || '0', 10);
+        const level2Points = parseInt(localStorage.getItem('level2Points') || '0', 10);
+        const level3Points = this.points;
+        
+        // Calculate total points
+        const totalPoints = level1Points + level2Points + level3Points;
+        
         const screenX = this.cameras.main.centerX;
         const screenY = this.cameras.main.centerY;
         
-        const bgRect = this.add.rectangle(screenX, screenY, 600, 300, 0x000000, 0.8);
+        // Make background bigger for victory screen
+        const bgRect = this.add.rectangle(screenX, screenY, 700, 400, 0x000000, 0.9);
         bgRect.setScrollFactor(0, 0);
         bgRect.setDepth(10000);
         
-        const victoryText = this.add.text(screenX, screenY - 60, 'LEVEL 3 COMPLETE!', {
-            fontSize: '36px',
-            fill: '#FF4500',
+        // VICTORY text - bigger and more prominent
+        const victoryText = this.add.text(screenX, screenY - 100, 'VICTORY!', {
+            fontSize: '64px',
+            fill: '#FFD700',
             fontFamily: 'Arial',
             fontWeight: 'bold',
             stroke: '#000000',
-            strokeThickness: 3
+            strokeThickness: 4
         });
         victoryText.setOrigin(0.5, 0.5);
         victoryText.setScrollFactor(0, 0);
         victoryText.setDepth(10000);
         
-        const victoryPointsText = this.add.text(screenX, screenY, `Points: ${this.points}`, {
-            fontSize: '28px',
+        // Total points text - larger and more prominent
+        const victoryPointsText = this.add.text(screenX, screenY, `Total Points: ${totalPoints}`, {
+            fontSize: '48px',
             fill: '#FFFFFF',
             fontFamily: 'Arial',
             fontWeight: 'bold',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: 3
         });
         victoryPointsText.setOrigin(0.5, 0.5);
         victoryPointsText.setScrollFactor(0, 0);
         victoryPointsText.setDepth(10000);
+        
+        // Breakdown of points (optional, smaller text)
+        const breakdownText = this.add.text(screenX, screenY + 60, `Level 1: ${level1Points} | Level 2: ${level2Points} | Level 3: ${level3Points}`, {
+            fontSize: '20px',
+            fill: '#CCCCCC',
+            fontFamily: 'Arial',
+            stroke: '#000000',
+            strokeThickness: 1
+        });
+        breakdownText.setOrigin(0.5, 0.5);
+        breakdownText.setScrollFactor(0, 0);
+        breakdownText.setDepth(10000);
         
         const restartText = this.add.text(screenX, screenY + 80, 'Press R to restart', {
             fontSize: '24px',
@@ -3076,6 +3102,7 @@ export class Level3Scene extends Phaser.Scene {
         this.victoryBgRect = bgRect;
         this.victoryText = victoryText;
         this.victoryPointsText = victoryPointsText;
+        this.victoryBreakdownText = breakdownText;
         this.restartText = restartText;
         
         try {
@@ -3108,6 +3135,7 @@ export class Level3Scene extends Phaser.Scene {
             if (this.victoryBgRect) this.victoryBgRect.destroy();
             if (this.victoryText) this.victoryText.destroy();
             if (this.victoryPointsText) this.victoryPointsText.destroy();
+            if (this.victoryBreakdownText) this.victoryBreakdownText.destroy();
             if (this.restartText) this.restartText.destroy();
             this.scene.restart();
         });

@@ -736,6 +736,9 @@ export class Level2Scene extends Phaser.Scene {
                 }
                 console.log('Pringle collected! Showing victory screen');
                 
+                // Store Level 2 points
+                localStorage.setItem('level2Points', this.points.toString());
+                
                 // Show victory screen (same as reachFinish)
                 const screenX = 400;
                 const screenY = 300;
@@ -3579,6 +3582,9 @@ export class Level2Scene extends Phaser.Scene {
         this.levelCompleted = true;
         this.player.setVelocityX(0);
         this.player.setVelocityY(0);
+        
+        // Store Level 2 points
+        localStorage.setItem('level2Points', this.points.toString());
         
         const screenX = 400;
         const screenY = 300;
