@@ -1500,7 +1500,7 @@ export class Level3Scene extends Phaser.Scene {
             this.dragonBoss.direction = 1; // 1 = right, -1 = left
             this.dragonBoss.state = 'patrol'; // 'patrol', 'pursuit', 'attacking', 'diving'
             this.dragonBoss.lastFireballTime = 0;
-            this.dragonBoss.fireballCooldown = 5000; // 5 seconds between shots (reduced frequency)
+            this.dragonBoss.fireballCooldown = 7000; // 7 seconds between shots (reduced fire rate)
             this.dragonBoss.patrolLeftX = arenaCenterX - 400;
             this.dragonBoss.patrolRightX = arenaCenterX + 400;
             // Get arena floor to set proper boundaries
@@ -1843,12 +1843,27 @@ export class Level3Scene extends Phaser.Scene {
         // Create finish flag at player's current position
         if (this.player && this.player.active) {
             const playerX = this.player.x;
-            const playerY = this.player.y;
             const groundY = this.bossArenaFloorY || 540; // Use arena floor Y or default ground level
             
+            // Destroy existing finish flag if it exists
+            if (this.finishZone) {
+                if (this.finishZone.parent) {
+                    this.finishZone.destroy();
+                }
+                this.finishZone = null;
+            }
+            
             // Place flag on the ground at player's X position
-            this.createFinishFlag(playerX, groundY);
-            console.log('Finish flag created at player position:', playerX, groundY);
+            console.log('Creating finish flag at player position. Player X:', playerX, 'Ground Y:', groundY);
+            try {
+                this.createFinishFlag(playerX, groundY);
+                console.log('Finish flag created successfully at:', playerX, groundY);
+            } catch (error) {
+                console.error('Error creating finish flag:', error);
+                console.error('Error stack:', error.stack);
+            }
+        } else {
+            console.error('Cannot create finish flag - player not available. Player:', this.player);
         }
         
         // Play victory sound
@@ -2247,21 +2262,21 @@ export class Level3Scene extends Phaser.Scene {
             
             // Adjust cooldown based on distance, state, and player movement (increased for less frequent shots)
             if (dragon.state === 'aggressive') {
-                fireballCooldown = 3000; // Reduced frequency when aggressive
+                fireballCooldown = 5000; // Less frequent when aggressive
                 // Burst fire when player is moving fast (harder to hit)
                 if (playerSpeedX > 3 || playerSpeedY > 3) {
-                    fireballCooldown = 2500; // Still reduced but faster than normal
+                    fireballCooldown = 4000; // Still reduced but faster than normal
                 }
             } else if (dragon.state === 'pursuit') {
-                fireballCooldown = 4000; // Reduced frequency
+                fireballCooldown = 6000; // Less frequent
                 // Faster shots if player is moving erratically
                 if (playerSpeedX > 2) {
-                    fireballCooldown = 3500;
+                    fireballCooldown = 5500;
                 }
             } else if (dragon.state === 'strafe') {
-                fireballCooldown = 4500; // Reduced frequency when strafing
+                fireballCooldown = 6500; // Less frequent when strafing
             } else {
-                fireballCooldown = 5000; // Reduced frequency when patrolling
+                fireballCooldown = 7000; // Less frequent when patrolling
             }
             
             // Shoot fireballs with smart timing and adaptive patterns (but not while diving)
