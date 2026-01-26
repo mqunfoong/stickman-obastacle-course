@@ -41,6 +41,11 @@ export class GameScene extends Phaser.Scene {
             console.log('✓ Victory sound file loaded successfully!');
         });
         
+        // Check if Pringle image loads
+        this.load.once('filecomplete-image-pringle', () => {
+            console.log('✓ Pringle image loaded successfully!');
+        });
+        
         this.load.once('loaderror', (file) => {
             console.error('✗ ERROR loading file:', file);
             if (file.key === 'backgroundMusic') {
@@ -53,6 +58,10 @@ export class GameScene extends Phaser.Scene {
             } else if (file.key === 'victorySound') {
                 console.warn('⚠ Victory sound not found: assets/sounds/victory.mp3');
                 console.warn('Game will continue without victory sound. Add the file to enable it.');
+            } else if (file.key === 'pringle') {
+                console.error('✗ ERROR: Pringle image not found!');
+                console.error('Expected path: assets/images/Pringle.png');
+                console.error('Check that the file exists in your project folder');
             }
         });
         
@@ -892,11 +901,20 @@ export class GameScene extends Phaser.Scene {
     }
     
     addPringle(platformX, platformY) {
+        console.log('=== addPringle called ===');
+        console.log('Platform X:', platformX, 'Platform Y:', platformY);
+        
         // Position Pringle slightly above the platform
         const pringleX = platformX;
         const pringleY = platformY - 40; // Slightly above the platform
         
+        // Check what textures are available
+        const allTextures = this.textures.list;
+        console.log('Available textures:', Object.keys(allTextures));
+        console.log('Checking if pringle texture exists...');
+        
         if (this.textures.exists('pringle')) {
+            console.log('✓ Pringle texture found! Creating image...');
             const pringle = this.add.image(pringleX, pringleY, 'pringle');
             pringle.setOrigin(0.5, 0.5);
             pringle.setDepth(10); // Above other elements
@@ -925,10 +943,14 @@ export class GameScene extends Phaser.Scene {
                 }
             }, null, this);
             
-            console.log('Pringle image added at x:', pringleX, 'y:', pringleY, 'scale:', scale);
-            console.log('Pringle reference stored:', !!this.pringle);
+            console.log('✓ Pringle image added at x:', pringleX, 'y:', pringleY, 'scale:', scale);
+            console.log('✓ Pringle reference stored:', !!this.pringle);
+            console.log('=== addPringle completed successfully ===');
         } else {
-            console.warn('Pringle image not found. Make sure the file is in assets/images/ with a valid extension (png, jpg, jpeg, gif, or webp)');
+            console.error('✗ Pringle texture NOT found!');
+            console.error('Available textures:', Object.keys(allTextures));
+            console.error('Make sure the file is in assets/images/Pringle.png');
+            console.error('Check browser Network tab to see if the file is loading');
         }
     }
     

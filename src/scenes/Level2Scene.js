@@ -27,6 +27,18 @@ export class Level2Scene extends Phaser.Scene {
         
         // Load Pringle image
         this.load.image('pringle', 'assets/images/Pringle.png');
+        
+        // Check if Pringle image loads
+        this.load.once('filecomplete-image-pringle', () => {
+            console.log('✓ Pringle image loaded successfully in Level 2!');
+        });
+        
+        this.load.once('loaderror', (file) => {
+            if (file.key === 'pringle') {
+                console.error('✗ ERROR: Pringle image not found in Level 2!');
+                console.error('Expected path: assets/images/Pringle.png');
+            }
+        });
     }
 
     create() {
@@ -613,6 +625,7 @@ export class Level2Scene extends Phaser.Scene {
     }
     
     addPringle() {
+        console.log('=== Level 2 addPringle called ===');
         // Pringle will be on the 4th cloud platform (which is at x: 180, y: -40)
         // The platform is already created in createSecretCloud, so we just add the Pringle image
         const pringleX = 180; // Same x as 4th platform
@@ -621,8 +634,14 @@ export class Level2Scene extends Phaser.Scene {
         // Position Pringle slightly above the cloud platform
         const pringleImageY = pringleY - 40; // Slightly above the cloud platform
         
+        // Check what textures are available
+        const allTextures = this.textures.list;
+        console.log('Level 2 - Available textures:', Object.keys(allTextures));
+        console.log('Level 2 - Checking if pringle texture exists...');
+        
         // Check if the image was loaded successfully
         if (this.textures.exists('pringle')) {
+            console.log('✓ Level 2 - Pringle texture found! Creating image...');
             const pringle = this.add.image(pringleX, pringleImageY, 'pringle');
             pringle.setOrigin(0.5, 0.5);
             pringle.setDepth(10); // Above other elements
@@ -658,10 +677,14 @@ export class Level2Scene extends Phaser.Scene {
                 }
             });
             
-            console.log('Pringle image added at x:', pringleX, 'y:', pringleImageY, 'scale:', scale);
-            console.log('Pringle reference stored:', !!this.pringle);
+            console.log('✓ Level 2 - Pringle image added at x:', pringleX, 'y:', pringleImageY, 'scale:', scale);
+            console.log('✓ Level 2 - Pringle reference stored:', !!this.pringle);
+            console.log('=== Level 2 addPringle completed successfully ===');
         } else {
-            console.warn('Pringle image not found. Make sure the file is in assets/images/ with a valid extension (png, jpg, jpeg, gif, or webp)');
+            console.error('✗ Level 2 - Pringle texture NOT found!');
+            console.error('Level 2 - Available textures:', Object.keys(allTextures));
+            console.error('Make sure the file is in assets/images/Pringle.png');
+            console.error('Check browser Network tab to see if the file is loading');
         }
     }
     
