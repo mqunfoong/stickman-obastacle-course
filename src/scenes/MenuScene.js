@@ -21,7 +21,7 @@ export class MenuScene extends Phaser.Scene {
             strokeThickness: 4
         };
         
-        const title = this.add.text(width / 2, 100, 'Bloop Obstacle Course', titleStyle);
+        const title = this.add.text(width / 2, 100, 'Stickman Obstacle Course', titleStyle);
         title.setOrigin(0.5, 0.5);
         
         // Subtitle
