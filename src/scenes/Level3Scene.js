@@ -1840,31 +1840,38 @@ export class Level3Scene extends Phaser.Scene {
             this.bossArenaRightDoor.isOpen = true;
         }
         
-        // Create finish flag at player's current position
-        if (this.player && this.player.active) {
-            const playerX = this.player.x;
-            const groundY = this.bossArenaFloorY || 540; // Use arena floor Y or default ground level
-            
-            // Destroy existing finish flag if it exists
-            if (this.finishZone) {
-                if (this.finishZone.parent) {
-                    this.finishZone.destroy();
+        // Create finish flag at player's current position (with a small delay to ensure everything is ready)
+        this.time.delayedCall(100, () => {
+            if (this.player && this.player.active) {
+                const playerX = this.player.x;
+                const groundY = this.bossArenaFloorY || 540; // Use arena floor Y or default ground level
+                
+                // Destroy existing finish flag if it exists
+                if (this.finishZone) {
+                    try {
+                        if (this.finishZone.parent) {
+                            this.finishZone.destroy();
+                        }
+                        this.finishZone = null;
+                    } catch (e) {
+                        console.warn('Error destroying existing finish zone:', e);
+                    }
                 }
-                this.finishZone = null;
+                
+                // Place flag on the ground at player's X position
+                console.log('Creating finish flag at player position. Player X:', playerX, 'Ground Y:', groundY);
+                console.log('bossArenaFloorY:', this.bossArenaFloorY);
+                try {
+                    this.createFinishFlag(playerX, groundY);
+                    console.log('Finish flag created successfully at:', playerX, groundY);
+                } catch (error) {
+                    console.error('Error creating finish flag:', error);
+                    console.error('Error stack:', error.stack);
+                }
+            } else {
+                console.error('Cannot create finish flag - player not available. Player:', this.player);
             }
-            
-            // Place flag on the ground at player's X position
-            console.log('Creating finish flag at player position. Player X:', playerX, 'Ground Y:', groundY);
-            try {
-                this.createFinishFlag(playerX, groundY);
-                console.log('Finish flag created successfully at:', playerX, groundY);
-            } catch (error) {
-                console.error('Error creating finish flag:', error);
-                console.error('Error stack:', error.stack);
-            }
-        } else {
-            console.error('Cannot create finish flag - player not available. Player:', this.player);
-        }
+        });
         
         // Play victory sound
         if (this.victorySound) {
@@ -2918,21 +2925,30 @@ export class Level3Scene extends Phaser.Scene {
     }
 
     createFinishFlag(finishX, platformY) {
+        console.log('=== createFinishFlag called ===');
+        console.log('finishX:', finishX, 'platformY:', platformY);
+        
         const poleHeight = 120;
         const poleBaseY = platformY;
         const poleTopY = poleBaseY - poleHeight;
+        const poleCenterY = poleBaseY - poleHeight/2;
         
-        const pole = this.add.rectangle(finishX, poleBaseY - poleHeight/2, 12, poleHeight, 0x654321);
-        pole.setDepth(10); // Make sure it's visible
-        pole.setScrollFactor(1, 1); // Make sure it scrolls with camera
+        // Create pole (brown rectangle)
+        const pole = this.add.rectangle(finishX, poleCenterY, 12, poleHeight, 0x654321);
+        pole.setDepth(100); // Very high depth to ensure visibility
+        pole.setScrollFactor(1, 1);
+        pole.setVisible(true);
+        pole.setActive(true);
         this.physics.add.existing(pole, true);
-        console.log('Finish flag pole created at:', finishX, poleBaseY - poleHeight/2);
+        console.log('Finish flag pole created at X:', finishX, 'Y:', poleCenterY, 'Height:', poleHeight);
         
         const flagWidth = 100;
         const flagHeight = 60;
         const checkerSize = 10;
         
+        // Create checkered flag texture if it doesn't exist
         if (!this.textures.exists('checkeredFlag')) {
+            console.log('Creating checkered flag texture...');
             const graphics = this.add.graphics();
             graphics.clear();
             
@@ -2954,23 +2970,29 @@ export class Level3Scene extends Phaser.Scene {
             graphics.strokeRect(0, 0, flagWidth, flagHeight);
             graphics.generateTexture('checkeredFlag', flagWidth, flagHeight);
             graphics.destroy();
+            console.log('Checkered flag texture created');
         }
         
+        // Create flag image
         const flag = this.add.image(finishX + 6, poleTopY, 'checkeredFlag');
         flag.setOrigin(0, 0.5);
-        flag.setDepth(10); // Make sure it's visible
-        flag.setScrollFactor(1, 1); // Make sure it scrolls with camera
-        console.log('Finish flag image created at:', finishX + 6, poleTopY);
+        flag.setDepth(100); // Very high depth
+        flag.setScrollFactor(1, 1);
+        flag.setVisible(true);
+        flag.setActive(true);
+        console.log('Finish flag image created at X:', finishX + 6, 'Y:', poleTopY);
         
-        // Make finish zone on the ground so player can reach it
+        // Make finish zone on the ground so player can reach it (make it more visible)
         const finishZoneY = platformY - 20; // Slightly above ground level
-        const finishZone = this.add.rectangle(finishX, finishZoneY, 100, 40, 0xFFD700, 0.5);
+        const finishZone = this.add.rectangle(finishX, finishZoneY, 100, 40, 0xFFD700, 0.8); // Increased opacity
         this.physics.add.existing(finishZone, true);
         finishZone.setOrigin(0.5, 0.5);
-        finishZone.setDepth(5); // Make sure it's visible
-        finishZone.setScrollFactor(1, 1); // Make sure it scrolls with camera
-        finishZone.setStrokeStyle(3, 0xFFD700);
-        console.log('Finish zone created at:', finishX, finishZoneY);
+        finishZone.setDepth(50); // High depth
+        finishZone.setScrollFactor(1, 1);
+        finishZone.setVisible(true);
+        finishZone.setActive(true);
+        finishZone.setStrokeStyle(5, 0xFF0000); // Red stroke to make it more visible
+        console.log('Finish zone created at X:', finishX, 'Y:', finishZoneY);
         
         if (finishZone.body) {
             finishZone.body.setSize(100, 30);
@@ -2979,7 +3001,16 @@ export class Level3Scene extends Phaser.Scene {
         
         finishZone.platformY = platformY;
         this.finishZone = finishZone;
-        this.physics.add.overlap(this.player, finishZone, this.reachFinish, null, this);
+        
+        // Set up overlap detection
+        if (this.player) {
+            this.physics.add.overlap(this.player, finishZone, this.reachFinish, null, this);
+            console.log('Overlap detection set up between player and finish zone');
+        } else {
+            console.error('Player not available when setting up finish zone overlap');
+        }
+        
+        console.log('=== createFinishFlag completed ===');
     }
 
     reachFinish(player, finishZone) {
