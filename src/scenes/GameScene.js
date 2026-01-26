@@ -25,8 +25,8 @@ export class GameScene extends Phaser.Scene {
         const victorySoundPath = 'assets/sounds/victory.mp3';
         this.load.audio('victorySound', victorySoundPath);
         
-        // Load Pringle image
-        this.load.image('pringle', 'assets/images/Pringle.png');
+        // Load Pringle image (use absolute path for Vite)
+        this.load.image('pringle', '/assets/images/Pringle.png');
         
         // Debug: Check if file loads
         this.load.once('filecomplete-audio-backgroundMusic', () => {

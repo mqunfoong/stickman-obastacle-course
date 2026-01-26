@@ -25,8 +25,8 @@ export class Level2Scene extends Phaser.Scene {
         const victorySoundPath = 'assets/sounds/victory.mp3';
         this.load.audio('victorySound', victorySoundPath);
         
-        // Load Pringle image
-        this.load.image('pringle', 'assets/images/Pringle.png');
+        // Load Pringle image (use absolute path for Vite)
+        this.load.image('pringle', '/assets/images/Pringle.png');
         
         // Check if Pringle image loads
         this.load.once('filecomplete-image-pringle', () => {
