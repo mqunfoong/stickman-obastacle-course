@@ -11,18 +11,18 @@ export class Level2Scene extends Phaser.Scene {
     }
 
     preload() {
-        // Load background music (same as Level 1)
-        const musicPath = 'assets/sounds/background.mp3';
+        // Load background music (same as Level 1, use absolute path for Vite)
+        const musicPath = '/assets/sounds/background.mp3';
         console.log('Level 2: Attempting to load music from:', musicPath);
         
         this.load.audio('backgroundMusic', musicPath);
         
-        // Load hit sound effect
-        const hitSoundPath = 'assets/sounds/hit.mp3';
+        // Load hit sound effect (use absolute path for Vite)
+        const hitSoundPath = '/assets/sounds/hit.mp3';
         this.load.audio('hitSound', hitSoundPath);
         
-        // Load victory sound effect
-        const victorySoundPath = 'assets/sounds/victory.mp3';
+        // Load victory sound effect (use absolute path for Vite)
+        const victorySoundPath = '/assets/sounds/victory.mp3';
         this.load.audio('victorySound', victorySoundPath);
         
         // Load Pringle image (use absolute path for Vite)
