@@ -2918,6 +2918,7 @@ export class Level3Scene extends Phaser.Scene {
         // Check for death immediately after taking damage
         if (this.hearts <= 0) {
             console.log('Player died! Restarting level...');
+            this.stopMusicBeforeRestart();
             this.time.delayedCall(300, () => {
                 this.scene.restart();
             });
@@ -3137,6 +3138,7 @@ export class Level3Scene extends Phaser.Scene {
             if (this.victoryPointsText) this.victoryPointsText.destroy();
             if (this.victoryBreakdownText) this.victoryBreakdownText.destroy();
             if (this.restartText) this.restartText.destroy();
+            this.stopMusicBeforeRestart();
             this.scene.restart();
         });
     }
@@ -3231,6 +3233,22 @@ export class Level3Scene extends Phaser.Scene {
             this.pointsText.setText(`Points: ${this.points}`);
         }
     }
+    
+    stopMusicBeforeRestart() {
+        // Stop music before restarting to prevent overlap
+        if (this.backgroundMusic && this.backgroundMusic.isPlaying) {
+            this.backgroundMusic.stop();
+        }
+        // Also stop any duplicate instances
+        if (this.game && this.game.sound && this.game.sound.sounds) {
+            const bgMusicSounds = this.game.sound.sounds.filter(s => s && s.key === 'backgroundMusic');
+            bgMusicSounds.forEach(sound => {
+                if (sound && sound.isPlaying) {
+                    sound.stop();
+                }
+            });
+        }
+    }
 
     update(time, delta) {
         if (this.levelCompleted) {
@@ -3301,6 +3319,7 @@ export class Level3Scene extends Phaser.Scene {
         // Check for lava damage (handled by overlap detector, but we can add visual updates here)
         
         if (this.player && this.player.y > 580) {
+            this.stopMusicBeforeRestart();
             this.scene.restart();
             return;
         }

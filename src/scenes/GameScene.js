@@ -1607,6 +1607,22 @@ export class GameScene extends Phaser.Scene {
             this.pointsText.setText('Points: ' + this.points);
         }
     }
+    
+    stopMusicBeforeRestart() {
+        // Stop music before restarting to prevent overlap
+        if (this.backgroundMusic && this.backgroundMusic.isPlaying) {
+            this.backgroundMusic.stop();
+        }
+        // Also stop any duplicate instances
+        if (this.game && this.game.sound && this.game.sound.sounds) {
+            const bgMusicSounds = this.game.sound.sounds.filter(s => s && s.key === 'backgroundMusic');
+            bgMusicSounds.forEach(sound => {
+                if (sound && sound.isPlaying) {
+                    sound.stop();
+                }
+            });
+        }
+    }
 
 
     createSpikeTexture() {
@@ -1759,6 +1775,7 @@ export class GameScene extends Phaser.Scene {
                 // If no hearts left, restart level
                 if (this.hearts <= 0) {
                     console.log('No hearts left! Restarting level...');
+                    this.stopMusicBeforeRestart();
                     this.time.delayedCall(500, () => {
                         this.scene.restart();
                     });
@@ -1770,6 +1787,7 @@ export class GameScene extends Phaser.Scene {
     restartLevel() {
         // Restart the level by restarting the scene
         console.log('Restarting level...');
+        this.stopMusicBeforeRestart();
         this.scene.restart();
     }
 
@@ -2131,6 +2149,7 @@ export class GameScene extends Phaser.Scene {
                 if (this.victoryPointsText) this.victoryPointsText.destroy();
                 if (this.nextLevelText) this.nextLevelText.destroy();
                 if (this.restartText) this.restartText.destroy();
+                this.stopMusicBeforeRestart();
                 this.scene.restart();
                 return;
             } else if (this.rKey && !this.rKey.isDown && this.rKeyJustPressed) {
@@ -2266,6 +2285,7 @@ export class GameScene extends Phaser.Scene {
             
             if (!isInPringleArea) {
                 console.log('RESTART TRIGGERED: Player Y =', this.player.y);
+                this.stopMusicBeforeRestart();
                 this.scene.restart();
                 return;
             }

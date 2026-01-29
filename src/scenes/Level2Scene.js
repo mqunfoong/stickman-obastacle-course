@@ -864,6 +864,7 @@ export class Level2Scene extends Phaser.Scene {
         
         // Check if player is dead
         if (this.hearts <= 0) {
+            this.stopMusicBeforeRestart();
             this.scene.restart();
         }
     }
@@ -1377,6 +1378,7 @@ export class Level2Scene extends Phaser.Scene {
         
         // Check if player is dead
         if (this.hearts <= 0) {
+            this.stopMusicBeforeRestart();
             this.scene.restart();
         }
         
@@ -3560,6 +3562,22 @@ export class Level2Scene extends Phaser.Scene {
             this.pointsText.setText('Points: ' + this.points);
         }
     }
+    
+    stopMusicBeforeRestart() {
+        // Stop music before restarting to prevent overlap
+        if (this.backgroundMusic && this.backgroundMusic.isPlaying) {
+            this.backgroundMusic.stop();
+        }
+        // Also stop any duplicate instances
+        if (this.game && this.game.sound && this.game.sound.sounds) {
+            const bgMusicSounds = this.game.sound.sounds.filter(s => s && s.key === 'backgroundMusic');
+            bgMusicSounds.forEach(sound => {
+                if (sound && sound.isPlaying) {
+                    sound.stop();
+                }
+            });
+        }
+    }
 
     reachFinish(player, finishZone) {
         if (this.levelCompleted) {
@@ -3714,6 +3732,7 @@ export class Level2Scene extends Phaser.Scene {
                 if (this.victoryPointsText) this.victoryPointsText.destroy();
                 if (this.nextLevelText) this.nextLevelText.destroy();
                 if (this.restartText) this.restartText.destroy();
+                this.stopMusicBeforeRestart();
                 this.scene.restart();
                 return;
             }
@@ -3801,6 +3820,7 @@ export class Level2Scene extends Phaser.Scene {
         }
         
         if (this.player && this.player.y > 580) {
+            this.stopMusicBeforeRestart();
             this.scene.restart();
             return;
         }
@@ -3928,6 +3948,7 @@ export class Level2Scene extends Phaser.Scene {
         
         // Check if player is dead
         if (this.hearts <= 0) {
+            this.stopMusicBeforeRestart();
             this.scene.restart();
         }
         
