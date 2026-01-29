@@ -25,8 +25,8 @@ export class Level3Scene extends Phaser.Scene {
         const victorySoundPath = '/assets/sounds/victory.mp3';
         this.load.audio('victorySound', victorySoundPath);
         
-        // Load fruit image (Welch's fruit snack)
-        this.load.image('fruit', '/assets/images/fruit.png');
+        // Load fruit image (Welch's fruit snack) - try both jpeg and png
+        this.load.image('fruit', '/assets/images/fruit.jpeg');
         
         // Check if fruit image loads
         this.load.once('filecomplete-image-fruit', () => {
@@ -36,7 +36,7 @@ export class Level3Scene extends Phaser.Scene {
         this.load.once('loaderror', (file) => {
             if (file.key === 'fruit') {
                 console.error('✗ ERROR: Fruit image not found in Level 3!');
-                console.error('Expected path: /assets/images/fruit.png');
+                console.error('Expected path: /assets/images/fruit.jpeg (or fruit.png)');
             }
         });
     }
@@ -51,8 +51,9 @@ export class Level3Scene extends Phaser.Scene {
             // Reset camera position
             this.cameras.main.setScroll(0, 0);
             
-            // Set world bounds - make the world much wider than the screen
-            this.physics.world.setBounds(0, 0, 4000, 1000, true, true, false, false);
+            // Set world bounds - extend to the left so player can go left off-screen
+            // World extends from -500 (left) to 4000 (right), height 1000
+            this.physics.world.setBounds(-500, 0, 4500, 1000, true, true, false, false);
             
             // Create lava-themed background elements first (behind everything)
             this.createLavaBackground();
@@ -204,8 +205,9 @@ export class Level3Scene extends Phaser.Scene {
     }
 
     setupCamera() {
-        // Camera bounds: allow camera to follow player
-        this.cameras.main.setBounds(0, 0, 4000, 1000);
+        // Camera bounds: allow camera to follow player to the left and right
+        // Match world bounds: -500 (left) to 4000 (right), width 4500, height 1000
+        this.cameras.main.setBounds(-500, 0, 4500, 1000);
         // Only start following if player exists
         if (this.player) {
             this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
@@ -470,8 +472,8 @@ export class Level3Scene extends Phaser.Scene {
 
     createFruitSnackPlatform() {
         // Create a platform with Welch's fruit snack, similar to the cheat cloud on Level 1
-        // Position it a little to the left of spawn (player spawns at x=100, y=440)
-        const platformX = 50; // A little to the left of spawn
+        // Position it off-screen to the left (player spawns at x=100, y=440)
+        const platformX = -150; // Off-screen to the left, like the cheat cloud
         const platformY = 400; // Reachable height from starting area
         const platformWidth = 120;
         const platformHeight = 30;
