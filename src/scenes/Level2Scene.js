@@ -192,7 +192,10 @@ export class Level2Scene extends Phaser.Scene {
 
     setupControls() {
         // Detect if device supports touch (mobile/tablet)
-        this.isMobile = this.sys.game.device.input.touch || (this.cameras.main.width <= 768);
+        const hasTouch = this.sys.game.device.input.touch;
+        const isSmallScreen = this.cameras.main.width <= 768;
+        this.isMobile = hasTouch || isSmallScreen;
+        console.log('Device detection - Touch:', hasTouch, 'Small screen:', isSmallScreen, 'Is mobile:', this.isMobile);
         
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd = this.input.keyboard.addKeys('W,S,A,D');
@@ -211,7 +214,10 @@ export class Level2Scene extends Phaser.Scene {
         
         // Create mobile controls if on mobile device
         if (this.isMobile) {
+            console.log('Creating mobile controls...');
             this.createMobileControls();
+        } else {
+            console.log('Desktop detected - no mobile controls');
         }
     }
     
@@ -232,7 +238,6 @@ export class Level2Scene extends Phaser.Scene {
             0.6
         );
         leftButton.setStrokeStyle(3, 0x000000);
-        leftButton.setInteractive({ useHandCursor: false });
         leftButton.setScrollFactor(0, 0);
         leftButton.setDepth(2000);
         
@@ -262,7 +267,6 @@ export class Level2Scene extends Phaser.Scene {
             0.6
         );
         rightButton.setStrokeStyle(3, 0x000000);
-        rightButton.setInteractive({ useHandCursor: false });
         rightButton.setScrollFactor(0, 0);
         rightButton.setDepth(2000);
         
@@ -292,7 +296,6 @@ export class Level2Scene extends Phaser.Scene {
             0.6
         );
         jumpButton.setStrokeStyle(3, 0x000000);
-        jumpButton.setInteractive({ useHandCursor: false });
         jumpButton.setScrollFactor(0, 0);
         jumpButton.setDepth(2000);
         
@@ -312,6 +315,11 @@ export class Level2Scene extends Phaser.Scene {
         jumpText.setScrollFactor(0, 0);
         jumpText.setDepth(2001);
         
+        // Make buttons more interactive with proper hit areas
+        leftButton.setInteractive({ useHandCursor: false, pixelPerfect: false });
+        rightButton.setInteractive({ useHandCursor: false, pixelPerfect: false });
+        jumpButton.setInteractive({ useHandCursor: false, pixelPerfect: false });
+        
         // Touch handlers for left button
         leftButton.on('pointerdown', () => {
             this.mobileLeft = true;
@@ -322,6 +330,10 @@ export class Level2Scene extends Phaser.Scene {
             leftButton.setFillStyle(0xFFFFFF, 0.6);
         });
         leftButton.on('pointerout', () => {
+            this.mobileLeft = false;
+            leftButton.setFillStyle(0xFFFFFF, 0.6);
+        });
+        leftButton.on('pointercancel', () => {
             this.mobileLeft = false;
             leftButton.setFillStyle(0xFFFFFF, 0.6);
         });
@@ -339,6 +351,10 @@ export class Level2Scene extends Phaser.Scene {
             this.mobileRight = false;
             rightButton.setFillStyle(0xFFFFFF, 0.6);
         });
+        rightButton.on('pointercancel', () => {
+            this.mobileRight = false;
+            rightButton.setFillStyle(0xFFFFFF, 0.6);
+        });
         
         // Touch handlers for jump button
         jumpButton.on('pointerdown', () => {
@@ -350,6 +366,10 @@ export class Level2Scene extends Phaser.Scene {
             jumpButton.setFillStyle(0x00FF00, 0.6);
         });
         jumpButton.on('pointerout', () => {
+            this.mobileJump = false;
+            jumpButton.setFillStyle(0x00FF00, 0.6);
+        });
+        jumpButton.on('pointercancel', () => {
             this.mobileJump = false;
             jumpButton.setFillStyle(0x00FF00, 0.6);
         });
