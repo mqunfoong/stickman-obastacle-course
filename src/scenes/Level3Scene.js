@@ -137,6 +137,7 @@ export class Level3Scene extends Phaser.Scene {
             // Initialize hearts system
             this.hearts = 3.0; // Use float to support half-heart damage
             this.goldHearts = 0; // Track gold hearts
+            this.fruitSnackCollected = false; // Track if Welch's fruit snack has been collected (one-shot boss power)
             this.lastLavaHitTime = 0;
             this.lavaHitCooldown = 500; // 0.5 second cooldown between lava hits (continuous damage)
             this.isInvincible = false;
@@ -508,11 +509,61 @@ export class Level3Scene extends Phaser.Scene {
             const scale = targetWidth / originalWidth;
             fruit.setScale(scale * 2);
             
+            // Make it a physics body for collection detection
+            this.physics.add.existing(fruit, true); // true = static
+            fruit.body.setSize(fruit.width * fruit.scaleX, fruit.height * fruit.scaleY);
+            
+            // Store reference to fruit snack
+            this.fruitSnack = fruit;
+            if (this.fruitSnackCollected === undefined) {
+                this.fruitSnackCollected = false; // Initialize if not already set
+            }
+            
+            // Set up overlap detector for collection
+            this.physics.add.overlap(this.player, fruit, () => {
+                if (!this.fruitSnackCollected && fruit.active) {
+                    console.log('OVERLAP DETECTED - Collecting Welch\'s fruit snack!');
+                    this.collectFruitSnack(fruit);
+                }
+            });
+            
             console.log('✓ Fruit snack platform created at x:', platformX, 'y:', platformY);
             console.log('✓ Welch\'s fruit snack added on platform at x:', fruitX, 'y:', fruitY);
         } else {
-            console.warn('⚠ Fruit texture not found - make sure /assets/images/fruit.png exists');
+            console.warn('⚠ Fruit texture not found - make sure /assets/images/fruit.jpeg exists');
         }
+    }
+
+    collectFruitSnack(fruit) {
+        if (this.fruitSnackCollected) return; // Already collected
+        this.fruitSnackCollected = true;
+        
+        console.log('Collecting Welch\'s fruit snack! Granting powers...');
+        
+        // Spin animation (360 degrees)
+        this.tweens.add({
+            targets: fruit,
+            rotation: fruit.rotation + Math.PI * 2, // 360 degrees in radians
+            scaleX: fruit.scaleX * 1.5,
+            scaleY: fruit.scaleY * 1.5,
+            duration: 500,
+            ease: 'Power2',
+            onComplete: () => {
+                // Make it disappear
+                fruit.setVisible(false);
+                fruit.setActive(false);
+                if (fruit && fruit.destroy) {
+                    fruit.destroy();
+                }
+                console.log('Welch\'s fruit snack collected! Powers granted: +2 hearts, one-shot boss!');
+            }
+        });
+        
+        // Add 2 hearts
+        this.hearts += 2.0;
+        this.updateHeartsDisplay();
+        
+        // Flag is already set (fruitSnackCollected = true) for one-shot boss power
     }
 
     createStickmanPose(textureName, pose) {
@@ -1923,8 +1974,13 @@ export class Level3Scene extends Phaser.Scene {
     hitDragonWithFireball(fireball, dragon) {
         if (!fireball.active || !dragon.active || dragon.isDead) return;
         
-        // Deal damage to dragon
-        dragon.health -= 1;
+        // Deal damage to dragon - one-shot if fruit snack was collected
+        if (this.fruitSnackCollected) {
+            dragon.health = 0; // Instant kill
+            console.log('ONE-SHOT! Welch\'s fruit snack power activated!');
+        } else {
+            dragon.health -= 1;
+        }
         
         // Visual feedback (only if not already flashing)
         if (!dragon.isFlashing) {
