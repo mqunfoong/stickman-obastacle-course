@@ -216,8 +216,11 @@ export class Level2Scene extends Phaser.Scene {
         if (this.isMobile) {
             console.log('Creating mobile controls...');
             this.createMobileControls();
-            // Tap anywhere to jump (on mobile)
-            this.input.on('pointerdown', () => {
+            // Tap anywhere to jump (on mobile) — but not when tapping the control buttons
+            this.input.on('pointerdown', (pointer) => {
+                if (this.mobileLeftButton && this.mobileLeftButton.getBounds().contains(pointer.x, pointer.y)) return;
+                if (this.mobileRightButton && this.mobileRightButton.getBounds().contains(pointer.x, pointer.y)) return;
+                if (this.mobileJumpButton && this.mobileJumpButton.getBounds().contains(pointer.x, pointer.y)) return;
                 if (this.levelCompleted) return;
                 if (this.player && this.player.body && this.player.body.touching.down) {
                     if (this.isLevitating !== true) {
@@ -323,6 +326,11 @@ export class Level2Scene extends Phaser.Scene {
         jumpText.setOrigin(0.5, 0.5);
         jumpText.setScrollFactor(0, 0);
         jumpText.setDepth(2001);
+        
+        // Store refs so tap-anywhere-to-jump can ignore taps on these buttons
+        this.mobileLeftButton = leftButton;
+        this.mobileRightButton = rightButton;
+        this.mobileJumpButton = jumpButton;
         
         // Make buttons more interactive with proper hit areas
         leftButton.setInteractive({ useHandCursor: false, pixelPerfect: false });

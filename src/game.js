@@ -12,7 +12,7 @@ const config = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
-    parent: 'body',
+    parent: 'game-container',
     backgroundColor: 0x87CEEB, // Sky blue background
     physics: {
         default: 'arcade',
@@ -33,5 +33,18 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+
+// On mobile, refresh scale when viewport changes (e.g. orientation, address bar)
+if (isMobile && game.scale) {
+    const refreshScale = () => {
+        game.scale.refresh();
+    };
+    window.addEventListener('resize', refreshScale);
+    window.addEventListener('orientationchange', () => {
+        setTimeout(refreshScale, 100);
+    });
+    // Fix initial layout after a short delay (helps some mobile browsers)
+    setTimeout(refreshScale, 300);
+}
 
 
