@@ -356,10 +356,15 @@ export class Level2Scene extends Phaser.Scene {
             rightButton.setFillStyle(0xFFFFFF, 0.6);
         });
         
-        // Touch handlers for jump button
+        // Touch handlers for jump button - trigger jump immediately on press
         jumpButton.on('pointerdown', () => {
-            this.mobileJump = true;
             jumpButton.setFillStyle(0x00CC00, 0.8);
+            // Trigger jump immediately if on ground and not levitating
+            if (this.player && this.player.body && this.player.body.touching.down && !this.isLevitating) {
+                this.player.setVelocityY(this.jumpSpeed);
+            }
+            // Also set flag for continuous jump detection
+            this.mobileJump = true;
         });
         jumpButton.on('pointerup', () => {
             this.mobileJump = false;
