@@ -24,6 +24,21 @@ export class Level3Scene extends Phaser.Scene {
         // Load victory sound effect (use absolute path for Vite)
         const victorySoundPath = '/assets/sounds/victory.mp3';
         this.load.audio('victorySound', victorySoundPath);
+        
+        // Load fruit image (Welch's fruit snack)
+        this.load.image('fruit', '/assets/images/fruit.png');
+        
+        // Check if fruit image loads
+        this.load.once('filecomplete-image-fruit', () => {
+            console.log('✓ Fruit image loaded successfully in Level 3!');
+        });
+        
+        this.load.once('loaderror', (file) => {
+            if (file.key === 'fruit') {
+                console.error('✗ ERROR: Fruit image not found in Level 3!');
+                console.error('Expected path: /assets/images/fruit.png');
+            }
+        });
     }
 
     create() {
@@ -44,6 +59,9 @@ export class Level3Scene extends Phaser.Scene {
             
             // Create the stickman player first
             this.createStickman();
+            
+            // Add fruit snack to the left of spawn
+            this.addFruitSnack();
             
             // Create ground and platforms (lava/rock themed)
             this.createGroundAndPlatforms();
@@ -232,8 +250,8 @@ export class Level3Scene extends Phaser.Scene {
     
     createMobileControls() {
         const { width, height } = this.cameras.main;
-        const buttonSize = 60;
-        const buttonSpacing = 80;
+        const buttonSize = 120;
+        const buttonSpacing = 130;
         const bottomMargin = 30;
         const sideMargin = 30;
         
@@ -443,6 +461,29 @@ export class Level3Scene extends Phaser.Scene {
             console.log('Stickman created successfully!');
         } catch (error) {
             console.error('Error creating stickman:', error);
+        }
+    }
+
+    addFruitSnack() {
+        // Player spawns at x=100, y=440, so place fruit to the left
+        const fruitX = 50; // To the left of spawn
+        const fruitY = 440; // Same ground level as spawn
+        
+        if (this.textures.exists('fruit')) {
+            console.log('✓ Fruit texture found! Creating image...');
+            const fruit = this.add.image(fruitX, fruitY, 'fruit');
+            fruit.setOrigin(0.5, 0.5);
+            fruit.setDepth(10); // Above other elements
+            
+            // Scale the fruit to a reasonable size (similar to player size)
+            const targetWidth = 40; // Target width in pixels
+            const originalWidth = fruit.width;
+            const scale = targetWidth / originalWidth;
+            fruit.setScale(scale * 2);
+            
+            console.log('✓ Fruit snack (Welch\'s) added at x:', fruitX, 'y:', fruitY);
+        } else {
+            console.warn('⚠ Fruit texture not found - make sure /assets/images/fruit.png exists');
         }
     }
 

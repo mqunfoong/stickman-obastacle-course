@@ -291,8 +291,8 @@ export class GameScene extends Phaser.Scene {
     
     createMobileControls() {
         const { width, height } = this.cameras.main;
-        const buttonSize = 60;
-        const buttonSpacing = 80;
+        const buttonSize = 120;
+        const buttonSpacing = 130;
         const bottomMargin = 30;
         const sideMargin = 30;
         
