@@ -51,9 +51,8 @@ export class Level3Scene extends Phaser.Scene {
             // Reset camera position
             this.cameras.main.setScroll(0, 0);
             
-            // Set world bounds - extend to the left so player can go left past spawn
-            // World extends from -500 (left) to 4000 (right), height 1000
-            this.physics.world.setBounds(-500, 0, 4500, 1000, true, true, false, false);
+            // Set world bounds - make the world much wider than the screen
+            this.physics.world.setBounds(0, 0, 4000, 1000, true, true, false, false);
             
             // Create lava-themed background elements first (behind everything)
             this.createLavaBackground();
@@ -61,11 +60,11 @@ export class Level3Scene extends Phaser.Scene {
             // Create the stickman player first
             this.createStickman();
             
-            // Add fruit snack to the left of spawn
-            this.addFruitSnack();
-            
             // Create ground and platforms (lava/rock themed)
             this.createGroundAndPlatforms();
+            
+            // Create secret platform with Welch's fruit snack to the left of spawn
+            this.createFruitSnackPlatform();
             
             // Create lava pond textures
             this.createLavaPondTexture();
@@ -205,9 +204,8 @@ export class Level3Scene extends Phaser.Scene {
     }
 
     setupCamera() {
-        // Camera bounds: allow camera to follow player to the left and right
-        // Match world bounds: -500 (left) to 4000 (right), width 4500, height 1000
-        this.cameras.main.setBounds(-500, 0, 4500, 1000);
+        // Camera bounds: allow camera to follow player
+        this.cameras.main.setBounds(0, 0, 4000, 1000);
         // Only start following if player exists
         if (this.player) {
             this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
@@ -470,24 +468,44 @@ export class Level3Scene extends Phaser.Scene {
         }
     }
 
-    addFruitSnack() {
-        // Player spawns at x=100, y=440, so place fruit to the left
-        const fruitX = 50; // To the left of spawn
-        const fruitY = 440; // Same ground level as spawn
+    createFruitSnackPlatform() {
+        // Create a platform with Welch's fruit snack, similar to the cheat cloud on Level 1
+        // Position it a little to the left of spawn (player spawns at x=100, y=440)
+        const platformX = 50; // A little to the left of spawn
+        const platformY = 400; // Reachable height from starting area
+        const platformWidth = 120;
+        const platformHeight = 30;
         
+        // Create platform as a dark rock/lava platform (matching Level 3 theme)
+        const platform = this.add.rectangle(platformX, platformY, platformWidth, platformHeight, 0x8B4513); // Brown rock color
+        this.physics.add.existing(platform, true); // true = static
+        platform.setOrigin(0.5, 0.5);
+        platform.setStrokeStyle(2, 0x654321); // Darker brown border
+        platform.setDepth(2);
+        
+        // Add to platforms group so player can land on it
+        if (this.platforms) {
+            this.platforms.add(platform);
+        }
+        
+        // Add Welch's fruit snack on top of the platform
         if (this.textures.exists('fruit')) {
-            console.log('✓ Fruit texture found! Creating image...');
+            console.log('✓ Fruit texture found! Creating image on platform...');
+            const fruitX = platformX;
+            const fruitY = platformY - 40; // Slightly above the platform
+            
             const fruit = this.add.image(fruitX, fruitY, 'fruit');
             fruit.setOrigin(0.5, 0.5);
             fruit.setDepth(10); // Above other elements
             
-            // Scale the fruit to a reasonable size (similar to player size)
+            // Scale the fruit to a reasonable size
             const targetWidth = 40; // Target width in pixels
             const originalWidth = fruit.width;
             const scale = targetWidth / originalWidth;
             fruit.setScale(scale * 2);
             
-            console.log('✓ Fruit snack (Welch\'s) added at x:', fruitX, 'y:', fruitY);
+            console.log('✓ Fruit snack platform created at x:', platformX, 'y:', platformY);
+            console.log('✓ Welch\'s fruit snack added on platform at x:', fruitX, 'y:', fruitY);
         } else {
             console.warn('⚠ Fruit texture not found - make sure /assets/images/fruit.png exists');
         }
