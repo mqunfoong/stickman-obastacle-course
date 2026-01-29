@@ -604,7 +604,9 @@ export class Level3Scene extends Phaser.Scene {
         // Create platforms group
         this.platforms = this.physics.add.staticGroup();
         
-        const worldWidth = 4000;
+        const worldLeftBound = -500; // World extends to the left
+        const worldRightBound = 4000;
+        const worldWidth = worldRightBound - worldLeftBound; // 4500 total width
         const gameHeight = 600; // Game is 600px tall
         const groundTopY = 540; // Top of ground (where player walks)
         // Make ground extend all the way to the very bottom of the screen and well beyond
@@ -614,20 +616,20 @@ export class Level3Scene extends Phaser.Scene {
         const platformColor = 0x4A4A4A; // Dark gray/black rock color
         const platformHeight = 20;
         
-        // Create continuous ground that extends to bottom of screen
-        // Position rectangle so it covers from groundTopY all the way to bottom
-        // Center Y = groundTopY + groundHeight/2 = 545 + 32.5 = 577.5
-        // This means ground extends from 545 to 610, covering the entire bottom
+        // Create continuous ground that extends to bottom of screen and covers left area
+        // Position rectangle to cover from worldLeftBound (-500) to worldRightBound (4000)
+        // Center X = (worldLeftBound + worldRightBound) / 2 = (-500 + 4000) / 2 = 1750
         // Use dark volcanic rock color
+        const groundCenterX = (worldLeftBound + worldRightBound) / 2; // 1750
         const groundCenterY = groundTopY + groundHeight / 2;
-        const ground = this.add.rectangle(worldWidth / 2, groundCenterY, worldWidth, groundHeight, 0x3A3A3A);
+        const ground = this.add.rectangle(groundCenterX, groundCenterY, worldWidth, groundHeight, 0x3A3A3A);
         this.physics.add.existing(ground, true);
         ground.setOrigin(0.5, 0.5);
         ground.setDepth(-1); // Behind everything
         this.ground = ground;
         
         // Add detailed texture to the ground (cracked volcanic rock)
-        this.addGroundDetail(worldWidth / 2, groundTopY, worldWidth, groundHeight);
+        this.addGroundDetail(groundCenterX, groundTopY, worldWidth, groundHeight);
         
         // Create platforms similar to Level 2 but with rock theme
         // All platforms moved down 10px to match ground adjustment
