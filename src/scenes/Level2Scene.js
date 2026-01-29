@@ -216,18 +216,6 @@ export class Level2Scene extends Phaser.Scene {
         if (this.isMobile) {
             console.log('Creating mobile controls...');
             this.createMobileControls();
-            // Tap anywhere to jump (on mobile) — but not when tapping the control buttons
-            this.input.on('pointerdown', (pointer) => {
-                if (this.mobileLeftButton && this.mobileLeftButton.getBounds().contains(pointer.x, pointer.y)) return;
-                if (this.mobileRightButton && this.mobileRightButton.getBounds().contains(pointer.x, pointer.y)) return;
-                if (this.mobileJumpButton && this.mobileJumpButton.getBounds().contains(pointer.x, pointer.y)) return;
-                if (this.levelCompleted) return;
-                if (this.player && this.player.body && this.player.body.touching.down) {
-                    if (this.isLevitating !== true) {
-                        this.player.setVelocityY(this.jumpSpeed);
-                    }
-                }
-            });
         } else {
             console.log('Desktop detected - no mobile controls');
         }
@@ -239,6 +227,11 @@ export class Level2Scene extends Phaser.Scene {
         const buttonSpacing = 80;
         const bottomMargin = 30;
         const sideMargin = 30;
+        
+        // Multi-touch: track which pointer IDs are on each button so left/right + jump work together
+        this.pointersOnLeft = new Set();
+        this.pointersOnRight = new Set();
+        this.pointersOnJump = new Set();
         
         // Left button (bottom left)
         const leftButton = this.add.rectangle(
@@ -327,73 +320,78 @@ export class Level2Scene extends Phaser.Scene {
         jumpText.setScrollFactor(0, 0);
         jumpText.setDepth(2001);
         
-        // Store refs so tap-anywhere-to-jump can ignore taps on these buttons
-        this.mobileLeftButton = leftButton;
-        this.mobileRightButton = rightButton;
-        this.mobileJumpButton = jumpButton;
-        
         // Make buttons more interactive with proper hit areas
         leftButton.setInteractive({ useHandCursor: false, pixelPerfect: false });
         rightButton.setInteractive({ useHandCursor: false, pixelPerfect: false });
         jumpButton.setInteractive({ useHandCursor: false, pixelPerfect: false });
         
-        // Touch handlers for left button
-        leftButton.on('pointerdown', () => {
+        // Touch handlers for left button (multi-touch: any finger on left = move left)
+        leftButton.on('pointerdown', (pointer) => {
+            this.pointersOnLeft.add(pointer.id);
             this.mobileLeft = true;
             leftButton.setFillStyle(0xCCCCCC, 0.8);
         });
-        leftButton.on('pointerup', () => {
-            this.mobileLeft = false;
-            leftButton.setFillStyle(0xFFFFFF, 0.6);
+        leftButton.on('pointerup', (pointer) => {
+            this.pointersOnLeft.delete(pointer.id);
+            this.mobileLeft = this.pointersOnLeft.size > 0;
+            if (!this.mobileLeft) leftButton.setFillStyle(0xFFFFFF, 0.6);
         });
-        leftButton.on('pointerout', () => {
-            this.mobileLeft = false;
-            leftButton.setFillStyle(0xFFFFFF, 0.6);
+        leftButton.on('pointerout', (pointer) => {
+            this.pointersOnLeft.delete(pointer.id);
+            this.mobileLeft = this.pointersOnLeft.size > 0;
+            if (!this.mobileLeft) leftButton.setFillStyle(0xFFFFFF, 0.6);
         });
-        leftButton.on('pointercancel', () => {
-            this.mobileLeft = false;
-            leftButton.setFillStyle(0xFFFFFF, 0.6);
+        leftButton.on('pointercancel', (pointer) => {
+            this.pointersOnLeft.delete(pointer.id);
+            this.mobileLeft = this.pointersOnLeft.size > 0;
+            if (!this.mobileLeft) leftButton.setFillStyle(0xFFFFFF, 0.6);
         });
         
-        // Touch handlers for right button
-        rightButton.on('pointerdown', () => {
+        // Touch handlers for right button (multi-touch: any finger on right = move right)
+        rightButton.on('pointerdown', (pointer) => {
+            this.pointersOnRight.add(pointer.id);
             this.mobileRight = true;
             rightButton.setFillStyle(0xCCCCCC, 0.8);
         });
-        rightButton.on('pointerup', () => {
-            this.mobileRight = false;
-            rightButton.setFillStyle(0xFFFFFF, 0.6);
+        rightButton.on('pointerup', (pointer) => {
+            this.pointersOnRight.delete(pointer.id);
+            this.mobileRight = this.pointersOnRight.size > 0;
+            if (!this.mobileRight) rightButton.setFillStyle(0xFFFFFF, 0.6);
         });
-        rightButton.on('pointerout', () => {
-            this.mobileRight = false;
-            rightButton.setFillStyle(0xFFFFFF, 0.6);
+        rightButton.on('pointerout', (pointer) => {
+            this.pointersOnRight.delete(pointer.id);
+            this.mobileRight = this.pointersOnRight.size > 0;
+            if (!this.mobileRight) rightButton.setFillStyle(0xFFFFFF, 0.6);
         });
-        rightButton.on('pointercancel', () => {
-            this.mobileRight = false;
-            rightButton.setFillStyle(0xFFFFFF, 0.6);
+        rightButton.on('pointercancel', (pointer) => {
+            this.pointersOnRight.delete(pointer.id);
+            this.mobileRight = this.pointersOnRight.size > 0;
+            if (!this.mobileRight) rightButton.setFillStyle(0xFFFFFF, 0.6);
         });
         
-        // Touch handlers for jump button - trigger jump immediately on press
-        jumpButton.on('pointerdown', () => {
+        // Touch handlers for jump button (multi-touch: jump only via green button; trigger on any finger)
+        jumpButton.on('pointerdown', (pointer) => {
+            this.pointersOnJump.add(pointer.id);
+            this.mobileJump = true;
             jumpButton.setFillStyle(0x00CC00, 0.8);
-            // Trigger jump immediately if on ground and not levitating
-            if (this.player && this.player.body && this.player.body.touching.down && !this.isLevitating) {
+            if (this.player && this.player.body && this.player.body.touching.down && this.isLevitating !== true) {
                 this.player.setVelocityY(this.jumpSpeed);
             }
-            // Also set flag for continuous jump detection
-            this.mobileJump = true;
         });
-        jumpButton.on('pointerup', () => {
-            this.mobileJump = false;
-            jumpButton.setFillStyle(0x00FF00, 0.6);
+        jumpButton.on('pointerup', (pointer) => {
+            this.pointersOnJump.delete(pointer.id);
+            this.mobileJump = this.pointersOnJump.size > 0;
+            if (!this.mobileJump) jumpButton.setFillStyle(0x00FF00, 0.6);
         });
-        jumpButton.on('pointerout', () => {
-            this.mobileJump = false;
-            jumpButton.setFillStyle(0x00FF00, 0.6);
+        jumpButton.on('pointerout', (pointer) => {
+            this.pointersOnJump.delete(pointer.id);
+            this.mobileJump = this.pointersOnJump.size > 0;
+            if (!this.mobileJump) jumpButton.setFillStyle(0x00FF00, 0.6);
         });
-        jumpButton.on('pointercancel', () => {
-            this.mobileJump = false;
-            jumpButton.setFillStyle(0x00FF00, 0.6);
+        jumpButton.on('pointercancel', (pointer) => {
+            this.pointersOnJump.delete(pointer.id);
+            this.mobileJump = this.pointersOnJump.size > 0;
+            if (!this.mobileJump) jumpButton.setFillStyle(0x00FF00, 0.6);
         });
         
         // Store references for cleanup if needed
