@@ -215,6 +215,7 @@ export class Level2Scene extends Phaser.Scene {
         // Create mobile controls if on mobile device
         if (this.isMobile) {
             console.log('Creating mobile controls...');
+            this.input.addPointer(2); // Allow 3 simultaneous touches so left/right + jump work together
             this.createMobileControls();
         } else {
             console.log('Desktop detected - no mobile controls');
