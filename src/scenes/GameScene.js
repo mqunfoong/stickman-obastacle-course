@@ -249,6 +249,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     setupControls() {
+        // Detect if device supports touch (mobile/tablet)
+        this.isMobile = this.sys.game.device.input.touch || (this.cameras.main.width <= 768);
+        
         // Create keyboard input
         // Arrow keys
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -267,6 +270,166 @@ export class GameScene extends Phaser.Scene {
         this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
         this.nKeyJustPressed = false;
         this.rKeyJustPressed = false;
+        
+        // Mobile touch control flags
+        this.mobileLeft = false;
+        this.mobileRight = false;
+        this.mobileJump = false;
+        
+        // Create mobile controls if on mobile device
+        if (this.isMobile) {
+            this.createMobileControls();
+        }
+    }
+    
+    createMobileControls() {
+        const { width, height } = this.cameras.main;
+        const buttonSize = 60;
+        const buttonSpacing = 80;
+        const bottomMargin = 30;
+        const sideMargin = 30;
+        
+        // Left button (bottom left)
+        const leftButton = this.add.rectangle(
+            sideMargin + buttonSize / 2,
+            height - bottomMargin - buttonSize / 2,
+            buttonSize,
+            buttonSize,
+            0xFFFFFF,
+            0.6
+        );
+        leftButton.setStrokeStyle(3, 0x000000);
+        leftButton.setInteractive({ useHandCursor: false });
+        leftButton.setScrollFactor(0, 0);
+        leftButton.setDepth(2000);
+        
+        // Left arrow icon
+        const leftArrow = this.add.text(
+            sideMargin + buttonSize / 2,
+            height - bottomMargin - buttonSize / 2,
+            '←',
+            {
+                fontSize: '32px',
+                fill: '#000000',
+                fontFamily: 'Arial',
+                fontWeight: 'bold'
+            }
+        );
+        leftArrow.setOrigin(0.5, 0.5);
+        leftArrow.setScrollFactor(0, 0);
+        leftArrow.setDepth(2001);
+        
+        // Right button (next to left button)
+        const rightButton = this.add.rectangle(
+            sideMargin + buttonSize / 2 + buttonSpacing,
+            height - bottomMargin - buttonSize / 2,
+            buttonSize,
+            buttonSize,
+            0xFFFFFF,
+            0.6
+        );
+        rightButton.setStrokeStyle(3, 0x000000);
+        rightButton.setInteractive({ useHandCursor: false });
+        rightButton.setScrollFactor(0, 0);
+        rightButton.setDepth(2000);
+        
+        // Right arrow icon
+        const rightArrow = this.add.text(
+            sideMargin + buttonSize / 2 + buttonSpacing,
+            height - bottomMargin - buttonSize / 2,
+            '→',
+            {
+                fontSize: '32px',
+                fill: '#000000',
+                fontFamily: 'Arial',
+                fontWeight: 'bold'
+            }
+        );
+        rightArrow.setOrigin(0.5, 0.5);
+        rightArrow.setScrollFactor(0, 0);
+        rightArrow.setDepth(2001);
+        
+        // Jump button (bottom right)
+        const jumpButton = this.add.rectangle(
+            width - sideMargin - buttonSize / 2,
+            height - bottomMargin - buttonSize / 2,
+            buttonSize,
+            buttonSize,
+            0x00FF00,
+            0.6
+        );
+        jumpButton.setStrokeStyle(3, 0x000000);
+        jumpButton.setInteractive({ useHandCursor: false });
+        jumpButton.setScrollFactor(0, 0);
+        jumpButton.setDepth(2000);
+        
+        // Jump icon (up arrow or "JUMP")
+        const jumpText = this.add.text(
+            width - sideMargin - buttonSize / 2,
+            height - bottomMargin - buttonSize / 2,
+            '↑',
+            {
+                fontSize: '32px',
+                fill: '#000000',
+                fontFamily: 'Arial',
+                fontWeight: 'bold'
+            }
+        );
+        jumpText.setOrigin(0.5, 0.5);
+        jumpText.setScrollFactor(0, 0);
+        jumpText.setDepth(2001);
+        
+        // Touch handlers for left button
+        leftButton.on('pointerdown', () => {
+            this.mobileLeft = true;
+            leftButton.setFillStyle(0xCCCCCC, 0.8);
+        });
+        leftButton.on('pointerup', () => {
+            this.mobileLeft = false;
+            leftButton.setFillStyle(0xFFFFFF, 0.6);
+        });
+        leftButton.on('pointerout', () => {
+            this.mobileLeft = false;
+            leftButton.setFillStyle(0xFFFFFF, 0.6);
+        });
+        
+        // Touch handlers for right button
+        rightButton.on('pointerdown', () => {
+            this.mobileRight = true;
+            rightButton.setFillStyle(0xCCCCCC, 0.8);
+        });
+        rightButton.on('pointerup', () => {
+            this.mobileRight = false;
+            rightButton.setFillStyle(0xFFFFFF, 0.6);
+        });
+        rightButton.on('pointerout', () => {
+            this.mobileRight = false;
+            rightButton.setFillStyle(0xFFFFFF, 0.6);
+        });
+        
+        // Touch handlers for jump button
+        jumpButton.on('pointerdown', () => {
+            this.mobileJump = true;
+            jumpButton.setFillStyle(0x00CC00, 0.8);
+        });
+        jumpButton.on('pointerup', () => {
+            this.mobileJump = false;
+            jumpButton.setFillStyle(0x00FF00, 0.6);
+        });
+        jumpButton.on('pointerout', () => {
+            this.mobileJump = false;
+            jumpButton.setFillStyle(0x00FF00, 0.6);
+        });
+        
+        // Store references for cleanup if needed
+        this.mobileControls = {
+            leftButton,
+            rightButton,
+            jumpButton,
+            leftArrow,
+            rightArrow,
+            jumpText
+        };
     }
 
     createStickman() {
@@ -2367,8 +2530,8 @@ export class GameScene extends Phaser.Scene {
         // Handle left/right movement
         let isMoving = false;
         
-        // Check if left arrow or A key is pressed
-        if (this.cursors.left.isDown || this.wasd.A.isDown) {
+        // Check if left arrow, A key, or mobile left button is pressed
+        if (this.cursors.left.isDown || this.wasd.A.isDown || this.mobileLeft) {
             // Move left (negative velocity)
             this.player.setVelocityX(-this.playerSpeed);
             isMoving = true;
@@ -2379,8 +2542,8 @@ export class GameScene extends Phaser.Scene {
             // We need to recreate the texture with eye on the left side
             // For now, flipping will flip the whole sprite including the eye
         }
-        // Check if right arrow or D key is pressed
-        else if (this.cursors.right.isDown || this.wasd.D.isDown) {
+        // Check if right arrow, D key, or mobile right button is pressed
+        else if (this.cursors.right.isDown || this.wasd.D.isDown || this.mobileRight) {
             // Move right (positive velocity)
             this.player.setVelocityX(this.playerSpeed);
             isMoving = true;
@@ -2396,14 +2559,14 @@ export class GameScene extends Phaser.Scene {
         const isMovingUp = this.player.body.velocity.y < 0; // Moving upward
         const isMovingDown = this.player.body.velocity.y > 0; // Moving downward
         
-        // Jump if spacebar, up arrow, or W is pressed AND player is on ground
-        if ((this.spaceKey.isDown || this.cursors.up.isDown || this.wasd.W.isDown) && isOnGround) {
+        // Jump if spacebar, up arrow, W, or mobile jump button is pressed AND player is on ground
+        if ((this.spaceKey.isDown || this.cursors.up.isDown || this.wasd.W.isDown || this.mobileJump) && isOnGround) {
             // Apply upward velocity (negative Y = up)
             this.player.setVelocityY(this.jumpSpeed);
         }
         
         // Start background music on first player movement (only once, never stop it)
-        if (!this.musicStarted && this.backgroundMusic && !this.backgroundMusic.isPlaying && (isMoving || (this.spaceKey.isDown || this.cursors.up.isDown || this.wasd.W.isDown))) {
+        if (!this.musicStarted && this.backgroundMusic && !this.backgroundMusic.isPlaying && (isMoving || (this.spaceKey.isDown || this.cursors.up.isDown || this.wasd.W.isDown || this.mobileJump))) {
             try {
                 this.backgroundMusic.play();
                 this.musicStarted = true;

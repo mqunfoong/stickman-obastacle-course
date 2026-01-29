@@ -191,6 +191,9 @@ export class Level2Scene extends Phaser.Scene {
     }
 
     setupControls() {
+        // Detect if device supports touch (mobile/tablet)
+        this.isMobile = this.sys.game.device.input.touch || (this.cameras.main.width <= 768);
+        
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd = this.input.keyboard.addKeys('W,S,A,D');
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -200,6 +203,166 @@ export class Level2Scene extends Phaser.Scene {
         // N and R keys for victory screen
         this.nKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
         this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+        
+        // Mobile touch control flags
+        this.mobileLeft = false;
+        this.mobileRight = false;
+        this.mobileJump = false;
+        
+        // Create mobile controls if on mobile device
+        if (this.isMobile) {
+            this.createMobileControls();
+        }
+    }
+    
+    createMobileControls() {
+        const { width, height } = this.cameras.main;
+        const buttonSize = 60;
+        const buttonSpacing = 80;
+        const bottomMargin = 30;
+        const sideMargin = 30;
+        
+        // Left button (bottom left)
+        const leftButton = this.add.rectangle(
+            sideMargin + buttonSize / 2,
+            height - bottomMargin - buttonSize / 2,
+            buttonSize,
+            buttonSize,
+            0xFFFFFF,
+            0.6
+        );
+        leftButton.setStrokeStyle(3, 0x000000);
+        leftButton.setInteractive({ useHandCursor: false });
+        leftButton.setScrollFactor(0, 0);
+        leftButton.setDepth(2000);
+        
+        // Left arrow icon
+        const leftArrow = this.add.text(
+            sideMargin + buttonSize / 2,
+            height - bottomMargin - buttonSize / 2,
+            '←',
+            {
+                fontSize: '32px',
+                fill: '#000000',
+                fontFamily: 'Arial',
+                fontWeight: 'bold'
+            }
+        );
+        leftArrow.setOrigin(0.5, 0.5);
+        leftArrow.setScrollFactor(0, 0);
+        leftArrow.setDepth(2001);
+        
+        // Right button (next to left button)
+        const rightButton = this.add.rectangle(
+            sideMargin + buttonSize / 2 + buttonSpacing,
+            height - bottomMargin - buttonSize / 2,
+            buttonSize,
+            buttonSize,
+            0xFFFFFF,
+            0.6
+        );
+        rightButton.setStrokeStyle(3, 0x000000);
+        rightButton.setInteractive({ useHandCursor: false });
+        rightButton.setScrollFactor(0, 0);
+        rightButton.setDepth(2000);
+        
+        // Right arrow icon
+        const rightArrow = this.add.text(
+            sideMargin + buttonSize / 2 + buttonSpacing,
+            height - bottomMargin - buttonSize / 2,
+            '→',
+            {
+                fontSize: '32px',
+                fill: '#000000',
+                fontFamily: 'Arial',
+                fontWeight: 'bold'
+            }
+        );
+        rightArrow.setOrigin(0.5, 0.5);
+        rightArrow.setScrollFactor(0, 0);
+        rightArrow.setDepth(2001);
+        
+        // Jump button (bottom right)
+        const jumpButton = this.add.rectangle(
+            width - sideMargin - buttonSize / 2,
+            height - bottomMargin - buttonSize / 2,
+            buttonSize,
+            buttonSize,
+            0x00FF00,
+            0.6
+        );
+        jumpButton.setStrokeStyle(3, 0x000000);
+        jumpButton.setInteractive({ useHandCursor: false });
+        jumpButton.setScrollFactor(0, 0);
+        jumpButton.setDepth(2000);
+        
+        // Jump icon (up arrow)
+        const jumpText = this.add.text(
+            width - sideMargin - buttonSize / 2,
+            height - bottomMargin - buttonSize / 2,
+            '↑',
+            {
+                fontSize: '32px',
+                fill: '#000000',
+                fontFamily: 'Arial',
+                fontWeight: 'bold'
+            }
+        );
+        jumpText.setOrigin(0.5, 0.5);
+        jumpText.setScrollFactor(0, 0);
+        jumpText.setDepth(2001);
+        
+        // Touch handlers for left button
+        leftButton.on('pointerdown', () => {
+            this.mobileLeft = true;
+            leftButton.setFillStyle(0xCCCCCC, 0.8);
+        });
+        leftButton.on('pointerup', () => {
+            this.mobileLeft = false;
+            leftButton.setFillStyle(0xFFFFFF, 0.6);
+        });
+        leftButton.on('pointerout', () => {
+            this.mobileLeft = false;
+            leftButton.setFillStyle(0xFFFFFF, 0.6);
+        });
+        
+        // Touch handlers for right button
+        rightButton.on('pointerdown', () => {
+            this.mobileRight = true;
+            rightButton.setFillStyle(0xCCCCCC, 0.8);
+        });
+        rightButton.on('pointerup', () => {
+            this.mobileRight = false;
+            rightButton.setFillStyle(0xFFFFFF, 0.6);
+        });
+        rightButton.on('pointerout', () => {
+            this.mobileRight = false;
+            rightButton.setFillStyle(0xFFFFFF, 0.6);
+        });
+        
+        // Touch handlers for jump button
+        jumpButton.on('pointerdown', () => {
+            this.mobileJump = true;
+            jumpButton.setFillStyle(0x00CC00, 0.8);
+        });
+        jumpButton.on('pointerup', () => {
+            this.mobileJump = false;
+            jumpButton.setFillStyle(0x00FF00, 0.6);
+        });
+        jumpButton.on('pointerout', () => {
+            this.mobileJump = false;
+            jumpButton.setFillStyle(0x00FF00, 0.6);
+        });
+        
+        // Store references for cleanup if needed
+        this.mobileControls = {
+            leftButton,
+            rightButton,
+            jumpButton,
+            leftArrow,
+            rightArrow,
+            jumpText
+        };
     }
 
     createStickman() {
@@ -3829,12 +3992,12 @@ export class Level2Scene extends Phaser.Scene {
         
         // Prevent horizontal movement during levitation
         if (!this.isLevitating) {
-            if (this.cursors.left.isDown || this.wasd.A.isDown) {
+            if (this.cursors.left.isDown || this.wasd.A.isDown || this.mobileLeft) {
                 this.player.setVelocityX(-this.playerSpeed);
                 isMoving = true;
                 this.facingDirection = -1;
                 this.player.setFlipX(true);
-            } else if (this.cursors.right.isDown || this.wasd.D.isDown) {
+            } else if (this.cursors.right.isDown || this.wasd.D.isDown || this.mobileRight) {
                 this.player.setVelocityX(this.playerSpeed);
                 isMoving = true;
                 this.facingDirection = 1;
@@ -3853,11 +4016,11 @@ export class Level2Scene extends Phaser.Scene {
         const isMovingDown = this.player.body.velocity.y > 0;
         
         // Only apply normal jump if not levitating
-        if ((this.spaceKey.isDown || this.cursors.up.isDown || this.wasd.W.isDown) && isOnGround && !this.isLevitating) {
+        if ((this.spaceKey.isDown || this.cursors.up.isDown || this.wasd.W.isDown || this.mobileJump) && isOnGround && !this.isLevitating) {
             this.player.setVelocityY(this.jumpSpeed);
         }
         
-        if (!this.musicStarted && this.backgroundMusic && !this.backgroundMusic.isPlaying && (isMoving || (this.spaceKey.isDown || this.cursors.up.isDown || this.wasd.W.isDown))) {
+        if (!this.musicStarted && this.backgroundMusic && !this.backgroundMusic.isPlaying && (isMoving || (this.spaceKey.isDown || this.cursors.up.isDown || this.wasd.W.isDown || this.mobileJump))) {
             try {
                 this.backgroundMusic.play();
                 this.musicStarted = true;
