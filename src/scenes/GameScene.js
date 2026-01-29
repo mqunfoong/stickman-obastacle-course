@@ -249,11 +249,15 @@ export class GameScene extends Phaser.Scene {
     }
 
     setupControls() {
-        // Detect if device supports touch (mobile/tablet)
-        const hasTouch = this.sys.game.device.input.touch;
-        const isSmallScreen = this.cameras.main.width <= 768;
-        this.isMobile = hasTouch || isSmallScreen;
-        console.log('Device detection - Touch:', hasTouch, 'Small screen:', isSmallScreen, 'Is mobile:', this.isMobile);
+        // Detect if device is actually a mobile device (phone/tablet), not a touchscreen laptop
+        // Check user agent for mobile device strings
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+        // Also check for very small screens (phones/tablets, not laptops)
+        const isSmallScreen = window.innerWidth <= 600;
+        // Only show mobile controls on actual mobile devices, not touchscreen laptops
+        this.isMobile = isMobileUserAgent && isSmallScreen;
+        console.log('Device detection - Mobile UA:', isMobileUserAgent, 'Small screen:', isSmallScreen, 'Is mobile:', this.isMobile);
         
         // Create keyboard input
         // Arrow keys
