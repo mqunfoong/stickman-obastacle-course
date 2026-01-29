@@ -48,8 +48,9 @@ export class Level3Scene extends Phaser.Scene {
             // Set dark, fiery background color for lava level
             this.cameras.main.setBackgroundColor(0x2A1A1A); // Dark red-brown, like volcanic ash
             
-            // Reset camera position
-            this.cameras.main.setScroll(0, 0);
+            // Set camera to start at spawn position (player spawns at x=100)
+            // This ensures the platform at x=-400 is off-screen initially
+            this.cameras.main.setScroll(100, 0);
             
             // Set world bounds - extend to the left so player can go left off-screen
             // World extends from -500 (left) to 4000 (right), height 1000
@@ -473,7 +474,8 @@ export class Level3Scene extends Phaser.Scene {
     createFruitSnackPlatform() {
         // Create a platform with Welch's fruit snack, similar to the cheat cloud on Level 1
         // Position it off-screen to the left (player spawns at x=100, y=440)
-        const platformX = -150; // Off-screen to the left, like the cheat cloud
+        // Camera starts at scroll(0,0) showing x=0 to x=800, so need to go much further left
+        const platformX = -400; // Far off-screen to the left (camera viewport is 800px wide)
         const platformY = 400; // Reachable height from starting area
         const platformWidth = 120;
         const platformHeight = 30;
