@@ -216,6 +216,12 @@ export class Level2Scene extends Phaser.Scene {
         if (this.isMobile) {
             console.log('Creating mobile controls...');
             this.createMobileControls();
+            // Tap anywhere to jump (on mobile)
+            this.input.on('pointerdown', () => {
+                if (this.player && this.player.body && this.player.body.touching.down && !this.levelCompleted && !this.isLevitating) {
+                    this.player.setVelocityY(this.jumpSpeed);
+                }
+            });
         } else {
             console.log('Desktop detected - no mobile controls');
         }
@@ -960,7 +966,7 @@ export class Level2Scene extends Phaser.Scene {
                 victoryPointsText.setScrollFactor(0, 0);
                 victoryPointsText.setDepth(10000);
                 
-                const nextLevelText = this.add.text(screenX, screenY + 50, 'Press N for Level 3', {
+                const nextLevelText = this.add.text(screenX, screenY + 50, this.isMobile ? 'Tap screen for Level 3' : 'Press N for Level 3', {
                     fontSize: '24px',
                     fill: '#00FF00',
                     fontFamily: 'Arial',
@@ -972,7 +978,7 @@ export class Level2Scene extends Phaser.Scene {
                 nextLevelText.setScrollFactor(0, 0);
                 nextLevelText.setDepth(10000);
                 
-                const restartText = this.add.text(screenX, screenY + 90, 'Press R to restart', {
+                const restartText = this.add.text(screenX, screenY + 90, this.isMobile ? 'Tap to restart' : 'Press R to restart', {
                     fontSize: '24px',
                     fill: '#00FF00',
                     fontFamily: 'Arial',
@@ -988,6 +994,23 @@ export class Level2Scene extends Phaser.Scene {
                 this.victoryPointsText = victoryPointsText;
                 this.nextLevelText = nextLevelText;
                 this.restartText = restartText;
+                
+                // On mobile: tap screen to go to Level 3
+                if (this.isMobile) {
+                    this.input.once('pointerdown', () => {
+                        if (this.victoryKeyPressed) return;
+                        this.victoryKeyPressed = true;
+                        this.levelCompleted = false;
+                        if (this.victoryBgRect) this.victoryBgRect.destroy();
+                        if (this.victoryText) this.victoryText.destroy();
+                        if (this.victoryPointsText) this.victoryPointsText.destroy();
+                        if (this.nextLevelText) this.nextLevelText.destroy();
+                        if (this.restartText) this.restartText.destroy();
+                        this.time.delayedCall(50, () => {
+                            this.scene.start('Level3Scene');
+                        });
+                    });
+                }
                 
                 // Play victory sound if available
                 if (this.victorySound) {
@@ -3824,7 +3847,7 @@ export class Level2Scene extends Phaser.Scene {
         victoryPointsText.setScrollFactor(0, 0);
         victoryPointsText.setDepth(10000);
         
-        const nextLevelText = this.add.text(screenX, screenY + 50, 'Press N for Level 3', {
+        const nextLevelText = this.add.text(screenX, screenY + 50, this.isMobile ? 'Tap screen for Level 3' : 'Press N for Level 3', {
             fontSize: '24px',
             fill: '#00FF00',
             fontFamily: 'Arial',
@@ -3836,7 +3859,7 @@ export class Level2Scene extends Phaser.Scene {
         nextLevelText.setScrollFactor(0, 0);
         nextLevelText.setDepth(10000);
         
-        const restartText = this.add.text(screenX, screenY + 90, 'Press R to restart', {
+        const restartText = this.add.text(screenX, screenY + 90, this.isMobile ? 'Tap to restart' : 'Press R to restart', {
             fontSize: '24px',
             fill: '#FFFF00',
             fontFamily: 'Arial',
@@ -3853,6 +3876,23 @@ export class Level2Scene extends Phaser.Scene {
         this.nextLevelText = nextLevelText;
         this.restartText = restartText;
         this.victoryKeyPressed = false;
+        
+        // On mobile: tap screen to go to Level 3
+        if (this.isMobile) {
+            this.input.once('pointerdown', () => {
+                if (this.victoryKeyPressed) return;
+                this.victoryKeyPressed = true;
+                this.levelCompleted = false;
+                if (this.victoryBgRect) this.victoryBgRect.destroy();
+                if (this.victoryText) this.victoryText.destroy();
+                if (this.victoryPointsText) this.victoryPointsText.destroy();
+                if (this.nextLevelText) this.nextLevelText.destroy();
+                if (this.restartText) this.restartText.destroy();
+                this.time.delayedCall(50, () => {
+                    this.scene.start('Level3Scene');
+                });
+            });
+        }
         
         try {
             if (this.backgroundMusic && this.backgroundMusic.isPlaying) {

@@ -224,6 +224,12 @@ export class Level3Scene extends Phaser.Scene {
         if (this.isMobile) {
             console.log('Creating mobile controls...');
             this.createMobileControls();
+            // Tap anywhere to jump (on mobile)
+            this.input.on('pointerdown', () => {
+                if (this.player && this.player.body && this.player.body.touching.down && !this.levelCompleted) {
+                    this.player.setVelocityY(this.jumpSpeed);
+                }
+            });
         } else {
             console.log('Desktop detected - no mobile controls');
         }
@@ -3277,7 +3283,7 @@ export class Level3Scene extends Phaser.Scene {
         breakdownText.setScrollFactor(0, 0);
         breakdownText.setDepth(10000);
         
-        const restartText = this.add.text(screenX, screenY + 80, 'Press R to restart', {
+        const restartText = this.add.text(screenX, screenY + 80, this.isMobile ? 'Tap screen to play again' : 'Press R to restart', {
             fontSize: '24px',
             fill: '#FF4500',
             fontFamily: 'Arial',
@@ -3329,6 +3335,20 @@ export class Level3Scene extends Phaser.Scene {
             this.stopMusicBeforeRestart();
             this.scene.restart();
         });
+        
+        // On mobile: tap screen to play again
+        if (this.isMobile) {
+            this.input.once('pointerdown', () => {
+                this.levelCompleted = false;
+                if (this.victoryBgRect) this.victoryBgRect.destroy();
+                if (this.victoryText) this.victoryText.destroy();
+                if (this.victoryPointsText) this.victoryPointsText.destroy();
+                if (this.victoryBreakdownText) this.victoryBreakdownText.destroy();
+                if (this.restartText) this.restartText.destroy();
+                this.stopMusicBeforeRestart();
+                this.scene.restart();
+            });
+        }
     }
 
     createHeartsDisplay() {
