@@ -51,8 +51,9 @@ export class Level3Scene extends Phaser.Scene {
             // Reset camera position
             this.cameras.main.setScroll(0, 0);
             
-            // Set world bounds - make the world much wider than the screen
-            this.physics.world.setBounds(0, 0, 4000, 1000, true, true, false, false);
+            // Set world bounds - extend to the left so player can go left past spawn
+            // World extends from -500 (left) to 4000 (right), height 1000
+            this.physics.world.setBounds(-500, 0, 4500, 1000, true, true, false, false);
             
             // Create lava-themed background elements first (behind everything)
             this.createLavaBackground();
@@ -204,8 +205,9 @@ export class Level3Scene extends Phaser.Scene {
     }
 
     setupCamera() {
-        // Camera bounds: allow camera to follow player
-        this.cameras.main.setBounds(0, 0, 4000, 1000);
+        // Camera bounds: allow camera to follow player to the left and right
+        // Match world bounds: -500 (left) to 4000 (right), width 4500, height 1000
+        this.cameras.main.setBounds(-500, 0, 4500, 1000);
         // Only start following if player exists
         if (this.player) {
             this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
