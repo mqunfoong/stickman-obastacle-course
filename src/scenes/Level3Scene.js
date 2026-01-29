@@ -555,16 +555,16 @@ export class Level3Scene extends Phaser.Scene {
                 if (fruit && fruit.destroy) {
                     fruit.destroy();
                 }
-                console.log('Welch\'s fruit snack collected! Powers granted: +2 hearts, triple speed, lava immunity, one-shot boss!');
+                console.log('Welch\'s fruit snack collected! Powers granted: +10 hearts, 4x speed, lava immunity, one-shot boss!');
             }
         });
         
-        // Add 2 hearts
-        this.hearts += 2.0;
+        // Add 10 hearts
+        this.hearts += 10.0;
         this.updateHeartsDisplay();
         
-        // Increase player speed significantly (from 200 to 600 - triple speed!)
-        this.playerSpeed = 600;
+        // Increase player speed significantly (from 200 to 800 - 4x speed!)
+        this.playerSpeed = 800;
         console.log('Speed boost activated! Player speed increased to:', this.playerSpeed);
         
         // Flag is already set (fruitSnackCollected = true) for one-shot boss power
