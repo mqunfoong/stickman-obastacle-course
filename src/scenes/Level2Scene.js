@@ -218,8 +218,11 @@ export class Level2Scene extends Phaser.Scene {
             this.createMobileControls();
             // Tap anywhere to jump (on mobile)
             this.input.on('pointerdown', () => {
-                if (this.player && this.player.body && this.player.body.touching.down && !this.levelCompleted && !this.isLevitating) {
-                    this.player.setVelocityY(this.jumpSpeed);
+                if (this.levelCompleted) return;
+                if (this.player && this.player.body && this.player.body.touching.down) {
+                    if (this.isLevitating !== true) {
+                        this.player.setVelocityY(this.jumpSpeed);
+                    }
                 }
             });
         } else {
@@ -941,6 +944,23 @@ export class Level2Scene extends Phaser.Scene {
                 bgRect.setScrollFactor(0, 0);
                 bgRect.setDepth(9999);
                 bgRect.setOrigin(0.5, 0.5);
+                // On mobile: make overlay tapable
+                if (this.isMobile) {
+                    bgRect.setInteractive({ useHandCursor: false });
+                    bgRect.once('pointerdown', () => {
+                        if (this.victoryKeyPressed) return;
+                        this.victoryKeyPressed = true;
+                        this.levelCompleted = false;
+                        if (this.victoryBgRect) this.victoryBgRect.destroy();
+                        if (this.victoryText) this.victoryText.destroy();
+                        if (this.victoryPointsText) this.victoryPointsText.destroy();
+                        if (this.nextLevelText) this.nextLevelText.destroy();
+                        if (this.restartText) this.restartText.destroy();
+                        this.time.delayedCall(50, () => {
+                            this.scene.start('Level3Scene');
+                        });
+                    });
+                }
                 
                 const victoryText = this.add.text(screenX, screenY - 50, 'LEVEL 2 COMPLETE!', {
                     fontSize: '48px',
@@ -994,23 +1014,6 @@ export class Level2Scene extends Phaser.Scene {
                 this.victoryPointsText = victoryPointsText;
                 this.nextLevelText = nextLevelText;
                 this.restartText = restartText;
-                
-                // On mobile: tap screen to go to Level 3
-                if (this.isMobile) {
-                    this.input.once('pointerdown', () => {
-                        if (this.victoryKeyPressed) return;
-                        this.victoryKeyPressed = true;
-                        this.levelCompleted = false;
-                        if (this.victoryBgRect) this.victoryBgRect.destroy();
-                        if (this.victoryText) this.victoryText.destroy();
-                        if (this.victoryPointsText) this.victoryPointsText.destroy();
-                        if (this.nextLevelText) this.nextLevelText.destroy();
-                        if (this.restartText) this.restartText.destroy();
-                        this.time.delayedCall(50, () => {
-                            this.scene.start('Level3Scene');
-                        });
-                    });
-                }
                 
                 // Play victory sound if available
                 if (this.victorySound) {
@@ -3822,6 +3825,23 @@ export class Level2Scene extends Phaser.Scene {
         bgRect.setScrollFactor(0, 0);
         bgRect.setDepth(9999);
         bgRect.setOrigin(0.5, 0.5);
+        // On mobile: make overlay tapable so tap-for-next-level works
+        if (this.isMobile) {
+            bgRect.setInteractive({ useHandCursor: false });
+            bgRect.once('pointerdown', () => {
+                if (this.victoryKeyPressed) return;
+                this.victoryKeyPressed = true;
+                this.levelCompleted = false;
+                if (this.victoryBgRect) this.victoryBgRect.destroy();
+                if (this.victoryText) this.victoryText.destroy();
+                if (this.victoryPointsText) this.victoryPointsText.destroy();
+                if (this.nextLevelText) this.nextLevelText.destroy();
+                if (this.restartText) this.restartText.destroy();
+                this.time.delayedCall(50, () => {
+                    this.scene.start('Level3Scene');
+                });
+            });
+        }
         
         const victoryText = this.add.text(screenX, screenY - 50, 'LEVEL 2 COMPLETE!', {
             fontSize: '48px',
@@ -3876,23 +3896,6 @@ export class Level2Scene extends Phaser.Scene {
         this.nextLevelText = nextLevelText;
         this.restartText = restartText;
         this.victoryKeyPressed = false;
-        
-        // On mobile: tap screen to go to Level 3
-        if (this.isMobile) {
-            this.input.once('pointerdown', () => {
-                if (this.victoryKeyPressed) return;
-                this.victoryKeyPressed = true;
-                this.levelCompleted = false;
-                if (this.victoryBgRect) this.victoryBgRect.destroy();
-                if (this.victoryText) this.victoryText.destroy();
-                if (this.victoryPointsText) this.victoryPointsText.destroy();
-                if (this.nextLevelText) this.nextLevelText.destroy();
-                if (this.restartText) this.restartText.destroy();
-                this.time.delayedCall(50, () => {
-                    this.scene.start('Level3Scene');
-                });
-            });
-        }
         
         try {
             if (this.backgroundMusic && this.backgroundMusic.isPlaying) {
