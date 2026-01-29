@@ -555,13 +555,17 @@ export class Level3Scene extends Phaser.Scene {
                 if (fruit && fruit.destroy) {
                     fruit.destroy();
                 }
-                console.log('Welch\'s fruit snack collected! Powers granted: +2 hearts, one-shot boss!');
+                console.log('Welch\'s fruit snack collected! Powers granted: +2 hearts, triple speed, lava immunity, one-shot boss!');
             }
         });
         
         // Add 2 hearts
         this.hearts += 2.0;
         this.updateHeartsDisplay();
+        
+        // Increase player speed significantly (from 200 to 600 - triple speed!)
+        this.playerSpeed = 600;
+        console.log('Speed boost activated! Player speed increased to:', this.playerSpeed);
         
         // Flag is already set (fruitSnackCollected = true) for one-shot boss power
     }
@@ -3187,8 +3191,8 @@ export class Level3Scene extends Phaser.Scene {
     }
 
     hitLava(lavaPond) {
-        // Check if player is invincible (normal or cheat)
-        if (this.isInvincible || this.invincibilityCheat) {
+        // Check if player is invincible (normal, cheat, or fruit snack power)
+        if (this.isInvincible || this.invincibilityCheat || this.fruitSnackCollected) {
             return;
         }
         
